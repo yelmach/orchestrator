@@ -10,3 +10,6 @@ explain.md
 BILLING_TEST_PLAN.md
 /.vagrant
 .env
+
+k3s.yaml
+node-token
