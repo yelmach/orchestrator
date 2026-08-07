@@ -28,13 +28,39 @@ ensure_kubectl() {
   fi
 }
 
+apply_manifests() {
+  echo "⏳ Injecting environment variables and applying manifests..."
+
+  if [ ! -f .env ]; then
+    echo "❌ ERROR: .env file not found! Please create your .env file before deploying."
+    exit 1
+  fi
+
+  set -a
+  source .env
+  set +a
+  
+  for file in manifests/*.yaml; do
+    echo "Processing $file..."
+    
+    if [ "$file" == "manifests/secrets.yaml" ]; then
+      envsubst < "$file" | kubectl delete --ignore-not-found -f - >/dev/null 2>&1
+      envsubst < "$file" | kubectl create -f -
+    else
+      envsubst < "$file" | kubectl apply -f -
+    fi
+  done
+
+  echo "✅ All manifests applied successfully."
+}
+
 create_cluster() {
   echo "Preparing cubectl environment..."
   ensure_kubectl
   
   vagrant up
   echo "cluster created"
-  
+
   echo "Exporting kubeconfig for local access..."
   export KUBECONFIG="$(pwd)/k3s.yaml"
   echo "✅ Run 'export KUBECONFIG=\$(pwd)/k3s.yaml' in your terminal to use kubectl."
@@ -72,6 +98,9 @@ case "$1" in
     ;;
   destroy)
     destroy_cluster
+    ;;
+  apply)
+    apply_manifests
     ;;
   *)
     echo "Usage: $0 {create|start|stop|destroy}"
