@@ -5,6 +5,9 @@ set -e
 : "${INVENTORY_DB_PASSWORD:?INVENTORY_DB_PASSWORD is required}"
 : "${INVENTORY_DB_NAME:?INVENTORY_DB_NAME is required}"
 
+mkdir -p /var/lib/postgresql/data /run/postgresql
+chown -R postgres:postgres /var/lib/postgresql/data /run/postgresql
+
 # Initialize DB only if the data directory is empty
 if [ -z "$(ls -A /var/lib/postgresql/data)" ]; then
     su-exec postgres initdb -D /var/lib/postgresql/data

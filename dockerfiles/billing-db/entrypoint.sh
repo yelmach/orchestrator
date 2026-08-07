@@ -5,6 +5,9 @@ set -e
 : "${BILLING_DB_PASSWORD:?BILLING_DB_PASSWORD is required}"
 : "${BILLING_DB_NAME:?BILLING_DB_NAME is required}"
 
+mkdir -p /var/lib/postgresql/data /run/postgresql
+chown -R postgres:postgres /var/lib/postgresql/data /run/postgresql
+
 if [ -z "$(ls -A /var/lib/postgresql/data)" ]; then
     su-exec postgres initdb -D /var/lib/postgresql/data
     
