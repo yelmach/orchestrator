@@ -1,0 +1,54 @@
+# Headless service to manage network identity for the StatefulSet
+apiVersion: v1
+kind: Service
+metadata:
+  name: billing-db
+  labels:
+    app: billing-db
+spec:
+  ports:
+  - port: ${BILLING_DB_PORT}
+    targetPort: ${BILLING_DB_PORT}
+  selector:
+    app: billing-db
+  clusterIP: None
+
+---
+
+# StatefulSet Definition & Persistent Volume
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: billing-db
+spec:
+  serviceName: billing-db
+  replicas: 1
+  selector:
+    matchLabels:
+      app: billing-db
+  # --- THE POD TEMPLATE ---
+  template:
+    metadata:
+      labels:
+        app: billing-db
+    spec:
+      containers:
+      - name: billing-db
+        image: yelmach/billing-db:latest
+        ports:
+        - containerPort: ${BILLING_DB_PORT}
+        envFrom:
+        - secretRef:
+            name: billing-db-secrets
+        volumeMounts:
+        - name: billing-db-data
+          mountPath: /var/lib/postgresql/data
+  # --- THE PVC FACTORY ---
+  volumeClaimTemplates:
+  - metadata:
+      name: billing-db-data
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+       requests:
+        storage: 1Gi
