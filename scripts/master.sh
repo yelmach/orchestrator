@@ -2,7 +2,7 @@
 
 echo "Installing K3s Master..."
 
-curl -sfL https://get.k3s.io | sh -s - --flannel-iface eth1
+curl -sfL https://get.k3s.io | sh -s - --flannel-iface eth1 --node-taint "node-role.kubernetes.io/master=true:NoSchedule"
 
 # Export the node token so the agent can use it to join
 cp /var/lib/rancher/k3s/server/node-token /vagrant/node-token

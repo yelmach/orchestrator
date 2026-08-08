@@ -1,0 +1,50 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: rabbit-queue-service
+  labels:
+    app: rabbit-queue
+spec:
+  ports:
+  - port: ${RABBITMQ_PORT}
+    targetPort: ${RABBITMQ_PORT}
+  selector:
+    app: rabbit-queue
+  clusterIP: None
+
+---
+
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: rabbit-queue
+spec:
+  serviceName: rabbit-queue-service
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rabbit-queue
+  template:
+    metadata:
+      labels:
+        app: rabbit-queue
+    spec:
+      containers:
+      - name: rabbit-queue
+        image: yelmach/rabbit-queue:latest
+        ports:
+        - containerPort: ${RABBITMQ_PORT}
+        envFrom:
+        - secretRef:
+            name: rabbit-queue-secrets
+        volumeMounts:
+        - name: rabbit-queue-data
+          mountPath: /var/lib/rabbitmq
+  volumeClaimTemplates:
+  - metadata:
+      name: rabbit-queue-data
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 1Gi

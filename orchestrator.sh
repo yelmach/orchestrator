@@ -42,13 +42,7 @@ apply_manifests() {
   
   for file in manifests/*.yaml; do
     echo "Processing $file..."
-    
-    if [ "$file" == "manifests/secrets.yaml" ]; then
-      envsubst < "$file" | kubectl delete --ignore-not-found -f - >/dev/null 2>&1
-      envsubst < "$file" | kubectl create -f -
-    else
-      envsubst < "$file" | kubectl apply -f -
-    fi
+    envsubst < "$file" | kubectl apply -f -
   done
 
   echo "✅ All manifests applied successfully."
@@ -69,6 +63,7 @@ create_cluster() {
 start_cluster() {
   vagrant up --no-provision
   echo "cluster started"
+  echo "✅ Run 'export KUBECONFIG=\$(pwd)/k3s.yaml' in your terminal to use kubectl."
 }
 
 stop_cluster() {
