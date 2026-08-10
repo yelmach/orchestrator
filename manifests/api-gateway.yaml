@@ -1,49 +1,53 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: inventory-app-service
+  name: api-gateway-service
   labels:
-    app: inventory-app
+    app: api-gateway
 spec:
+  type: NodePort
   ports:
-  - port: ${INVENTORY_PORT}
-    targetPort: ${INVENTORY_PORT}
+  - port: ${GATEWAY_PORT}
+    targetPort: ${GATEWAY_PORT}
+    nodePort: 30000
   selector:
-    app: inventory-app
+    app: api-gateway
 
 ---
 
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: inventory-app
+  name: api-gateway
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: inventory-app
+      app: api-gateway
   template:
     metadata:
       labels:
-        app: inventory-app
+        app: api-gateway
     spec:
       containers:
-      - name: inventory-app
-        image: yelmach/inventory-app:latest
+      - name: api-gateway
+        image: yelmach/api-gateway-app:latest
         ports:
-        - containerPort: ${INVENTORY_PORT}
+        - containerPort: ${GATEWAY_PORT}
         envFrom:
         - secretRef:
-            name: inventory-db-secrets
+            name: rabbit-queue-secrets
         env:
-        - name: INVENTORY_DB_HOST
-          value: "${INVENTORY_DB_HOST}"
-        - name: INVENTORY_DB_PORT
-          value: "${INVENTORY_DB_PORT}"
-        - name: INVENTORY_HOST
-          value: "${INVENTORY_HOST}"
-        - name: INVENTORY_PORT
-          value: "${INVENTORY_PORT}"
+        - name: INVENTORY_API_URL
+          value: ${INVENTORY_API_URL}
+        - name: RABBITMQ_HOST
+          value: "${RABBITMQ_HOST}"
+        - name: RABBITMQ_PORT
+          value: "${RABBITMQ_PORT}"
+        - name: GATEWAY_HOST
+          value: "${GATEWAY_HOST}"
+        - name: GATEWAY_PORT
+          value: "${GATEWAY_PORT}"
         resources:
           requests:
             cpu: "100m"
@@ -57,12 +61,12 @@ spec:
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
-  name: inventory-app-hpa
+  name: api-gateway-hpa
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: inventory-app
+    name: api-gateway
   minReplicas: 1
   maxReplicas: 3
   metrics:

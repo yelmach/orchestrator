@@ -1,0 +1,56 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: billing-app-service
+  labels:
+    app: billing-app
+spec:
+  ports:
+  - port: ${BILLING_PORT}
+    targetPort: ${BILLING_PORT}
+  selector:
+    app: billing-app
+  clusterIP: None
+
+---
+
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: billing-app
+spec:
+  serviceName: billing-app-service
+  replicas: 1
+  selector:
+    matchLabels:
+      app: billing-app
+  template:
+    metadata:
+      labels:
+        app: billing-app
+    spec:
+      containers:
+      - name: billing-app
+        image: yelmach/billing-app:latest
+        ports:
+        - containerPort: ${BILLING_PORT}
+        envFrom:
+        - secretRef:
+            name: billing-db-secrets
+        - secretRef:
+            name: rabbit-queue-secrets
+        env:
+        - name: BILLING_HOST
+          value: "${BILLING_HOST}"
+        - name: BILLING_PORT
+          value: "${BILLING_PORT}"
+
+        - name: BILLING_DB_HOST
+          value: "${BILLING_DB_HOST}"
+        - name: BILLING_DB_PORT
+          value: "${BILLING_DB_PORT}"
+
+        - name: RABBITMQ_HOST
+          value: "${RABBITMQ_HOST}"
+        - name: RABBITMQ_PORT
+          value: "${RABBITMQ_PORT}"
