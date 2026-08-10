@@ -17,6 +17,7 @@ Vagrant.configure("2") do |config|
   config.vm.define "agent" do |agent|
     agent.vm.hostname = "agent1-node"
     agent.vm.network "private_network", ip: "192.168.56.11"
+    agent.vm.network "forwarded_port", guest: 30000, host: 3000
     
     agent.vm.provider "virtualbox" do |vb|
       vb.memory = "2048"
