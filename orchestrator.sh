@@ -4,9 +4,9 @@ set -e
 
 ensure_kubectl() {
   if command -v kubectl >/dev/null 2>&1; then
-    echo "✅ kubectl is already installed at: $(command -v kubectl)"
+    echo "kubectl is already installed at: $(command -v kubectl)"
   else
-    echo "⏳ kubectl not found. Installing kubectl..."
+    echo "kubectl not found. Installing kubectl..."
     
     KUBECTL_VERSION=$(curl -L -s https://dl.k8s.io/release/stable.txt)
     
@@ -15,13 +15,13 @@ ensure_kubectl() {
     chmod +x kubectl
     
     mv kubectl "$HOME/.local/bin/"
-    echo "✅ kubectl successfully installed to $HOME/.local/bin/"
+    echo "kubectl successfully installed to $HOME/.local/bin/"
     
     export PATH="$HOME/.local/bin:$PATH"
     
     # Alert if the local bin is missing from the permanent PATH
     if [[ ":$PATH:" != *":$HOME/.local/bin:"* ]]; then
-        echo "⚠️ WARNING: $HOME/.local/bin is not in your system PATH."
+        echo "WARNING: $HOME/.local/bin is not in your system PATH."
         echo "   Please run the following command to add it permanently:"
         echo '   echo "export PATH=\$HOME/.local/bin:\$PATH" >> ~/.zshrc && source ~/.zshrc'
     fi
@@ -29,10 +29,10 @@ ensure_kubectl() {
 }
 
 apply_manifests() {
-  echo "⏳ Injecting environment variables and applying manifests..."
+  echo "Injecting environment variables and applying manifests..."
 
   if [ ! -f .env ]; then
-    echo "❌ ERROR: .env file not found! Please create your .env file before deploying."
+    echo "ERROR: .env file not found! Please create your .env file before deploying."
     exit 1
   fi
 
@@ -45,7 +45,7 @@ apply_manifests() {
     envsubst < "$file" | kubectl apply -f -
   done
 
-  echo "✅ All manifests applied successfully."
+  echo "All manifests applied successfully."
 }
 
 create_cluster() {
@@ -57,13 +57,13 @@ create_cluster() {
 
   echo "Exporting kubeconfig for local access..."
   export KUBECONFIG="$(pwd)/k3s.yaml"
-  echo "✅ Run 'export KUBECONFIG=\$(pwd)/k3s.yaml' in your terminal to use kubectl."
+  echo "Run 'export KUBECONFIG=\$(pwd)/k3s.yaml' in your terminal to use kubectl."
 }
 
 start_cluster() {
   vagrant up --no-provision
   echo "cluster started"
-  echo "✅ Run 'export KUBECONFIG=\$(pwd)/k3s.yaml' in your terminal to use kubectl."
+  echo "Run 'export KUBECONFIG=\$(pwd)/k3s.yaml' in your terminal to use kubectl."
 }
 
 stop_cluster() {
@@ -98,7 +98,7 @@ case "$1" in
     apply_manifests
     ;;
   *)
-    echo "Usage: $0 {create|start|stop|destroy}"
+    echo "Usage: $0 {create|start|stop|destroy|apply}"
     exit 1
     ;;
 esac
